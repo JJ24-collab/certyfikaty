@@ -74,29 +74,35 @@ def generate_certificates_page(template_manager, data_handler):
         with open(temp_path, 'wb') as f:
             f.write(uploaded_file.getbuffer())
 
-        # Wczytaj dane
-        df = data_handler.load_file(temp_path)
+        try:
+            # Wczytaj dane uczestników
+            df = data_handler.load_participants(temp_path)
 
-        if df is not None:
             st.success(f"Wczytano {len(df)} rekordów")
             st.dataframe(df)
 
-            # Walidacja kolumn
-            required_columns = ['Imię', 'Nazwisko', 'Email', 'Warsztat', 'Data']
-            is_valid, missing = data_handler.validate_columns(required_columns)
+            # Walidacja danych
+            st.subheader("2. Walidacja danych")
+            errors = data_handler.validate_data(df)
 
-            if not is_valid:
-                st.error(f"Brakujące kolumny: {', '.join(missing)}")
-                st.info(f"Wymagane kolumny: {', '.join(required_columns)}")
-                return
+            if errors:
+                st.error("Znaleziono błędy w danych:")
+                for error in errors:
+                    st.warning(f"• {error}")
+
+                # Pytaj użytkownika czy kontynuować mimo błędów
+                if not st.checkbox("Kontynuuj mimo błędów"):
+                    return
+            else:
+                st.success("✓ Wszystkie dane są poprawne")
 
             # Przycisk generowania
-            st.subheader("2. Generuj certyfikaty")
+            st.subheader("3. Generuj certyfikaty")
 
             if st.button("Generuj wszystkie certyfikaty", type="primary"):
                 with st.spinner("Generowanie certyfikatów..."):
                     # Pobierz listę uczestników
-                    participants = data_handler.get_participants_list()
+                    participants = data_handler.get_participants_list(df)
 
                     # Inicjalizuj generator PDF
                     template_path = template_manager.get_template_path(selected_template)
@@ -113,8 +119,12 @@ def generate_certificates_page(template_manager, data_handler):
 
                     st.info(f"Certyfikaty zapisane w katalogu: output/")
 
-        else:
-            st.error("Błąd podczas wczytywania pliku")
+        except FileNotFoundError as e:
+            st.error(f"Błąd: {e}")
+        except ValueError as e:
+            st.error(f"Błąd walidacji: {e}")
+        except Exception as e:
+            st.error(f"Nieoczekiwany błąd: {e}")
 
 
 def manage_templates_page(template_manager):

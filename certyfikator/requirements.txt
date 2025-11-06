@@ -1,0 +1,8 @@
+streamlit
+reportlab
+pandas
+pillow
+pytesseract
+openpyxl
+python-docx
+weasyprint

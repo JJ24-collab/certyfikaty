@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certyfikat Ukończenia Warsztatu</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Georgia', 'Times New Roman', serif;
+        }
+
+        .certificate-container {
+            width: 297mm;
+            height: 210mm;
+            padding: 0;
+            margin: 0;
+            position: relative;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        .certificate {
+            position: absolute;
+            top: 15mm;
+            left: 15mm;
+            right: 15mm;
+            bottom: 15mm;
+            background: white;
+            border: 3px solid #2c3e50;
+            box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.5),
+                        0 0 0 13px #2c3e50;
+            padding: 30mm 40mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .ornament {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border: 3px solid #3498db;
+        }
+
+        .ornament.top-left {
+            top: -3px;
+            left: -3px;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .ornament.top-right {
+            top: -3px;
+            right: -3px;
+            border-left: none;
+            border-bottom: none;
+        }
+
+        .ornament.bottom-left {
+            bottom: -3px;
+            left: -3px;
+            border-right: none;
+            border-top: none;
+        }
+
+        .ornament.bottom-right {
+            bottom: -3px;
+            right: -3px;
+            border-left: none;
+            border-top: none;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+            background: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
+        }
+
+        .title {
+            font-size: 42px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            font-weight: normal;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #7f8c8d;
+            font-style: italic;
+            letter-spacing: 2px;
+        }
+
+        .content {
+            text-align: center;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px 0;
+        }
+
+        .intro-text {
+            font-size: 20px;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .participant-name {
+            font-size: 44px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 20px 0;
+            padding: 15px 40px;
+            border-top: 2px solid #3498db;
+            border-bottom: 2px solid #3498db;
+            display: inline-block;
+        }
+
+        .completion-text {
+            font-size: 20px;
+            color: #555;
+            margin: 15px 0;
+        }
+
+        .workshop-name {
+            font-size: 32px;
+            font-weight: bold;
+            color: #3498db;
+            margin: 20px 0;
+            font-style: italic;
+        }
+
+        .workshop-date {
+            font-size: 18px;
+            color: #7f8c8d;
+            margin-top: 15px;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+
+        .signature {
+            text-align: center;
+            flex: 1;
+        }
+
+        .signature-line {
+            width: 180px;
+            height: 1px;
+            background: #333;
+            margin: 0 auto 10px;
+        }
+
+        .signature-title {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .certificate-id {
+            font-size: 10px;
+            color: #bbb;
+            text-align: right;
+        }
+
+        .decorative-line {
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right,
+                transparent 0%,
+                #3498db 20%,
+                #3498db 80%,
+                transparent 100%);
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="certificate-container">
+        <div class="certificate">
+            <div class="ornament top-left"></div>
+            <div class="ornament top-right"></div>
+            <div class="ornament bottom-left"></div>
+            <div class="ornament bottom-right"></div>
+
+            <div class="header">
+                <div class="logo">C</div>
+                <h1 class="title">Certyfikat</h1>
+                <p class="subtitle">Ukończenia Warsztatu</p>
+            </div>
+
+            <div class="decorative-line"></div>
+
+            <div class="content">
+                <p class="intro-text">Niniejszym poświadcza się, że</p>
+
+                <div class="participant-name">{imie} {nazwisko}</div>
+
+                <p class="completion-text">z sukcesem ukończył/a warsztat</p>
+
+                <div class="workshop-name">„{warsztat}"</div>
+
+                <p class="workshop-date">przeprowadzony w dniu: {data}</p>
+            </div>
+
+            <div class="decorative-line"></div>
+
+            <div class="footer">
+                <div class="signature">
+                    <div class="signature-line"></div>
+                    <p class="signature-title">Organizator</p>
+                </div>
+
+                <div class="signature">
+                    <div class="signature-line"></div>
+                    <p class="signature-title">Prowadzący</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

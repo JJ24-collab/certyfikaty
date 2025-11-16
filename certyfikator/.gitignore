@@ -39,6 +39,7 @@ Thumbs.db
 
 # Project specific
 output/*.pdf
+output/test_workflow/
 !output/.gitkeep
 data/attendance/*.pdf
 data/attendance/*.png

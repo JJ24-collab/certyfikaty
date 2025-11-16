@@ -219,9 +219,114 @@ def tab_generate_certificates():
         else:
             st.success("✅ Wszystkie dane są poprawne!")
 
-        # Sekcja 3: Konfiguracja certyfikatu
+        # Sekcja 3.5: Wybór szablonu
         st.markdown("---")
-        st.subheader("4️⃣ Konfiguracja certyfikatu")
+        st.subheader("4️⃣ Wybór szablonu certyfikatu")
+
+        from modules.template_manager import TemplateManager
+
+        template_manager = TemplateManager('templates')
+        available_templates = template_manager.get_available_templates()
+
+        if not available_templates:
+            st.warning("⚠️ Nie znaleziono szablonów w folderze templates/")
+            available_templates = []
+
+        col1, col2 = st.columns([2, 1])
+
+        with col1:
+            # Selectbox wyboru szablonu
+            template_options = []
+            template_display = {}
+
+            for template_name in available_templates:
+                metadata = template_manager.get_template_metadata(template_name)
+                display = f"{metadata['display_name']} - {metadata['description']}"
+                template_options.append(display)
+                template_display[display] = template_name
+
+            selected_display = st.selectbox(
+                "📄 Wybierz szablon:",
+                template_options if template_options else ["Brak dostępnych szablonów"],
+                help="Wybierz styl certyfikatu"
+            )
+
+            selected_template = template_display.get(selected_display, available_templates[0] if available_templates else None)
+
+        with col2:
+            # Upload własnego szablonu
+            custom_template = st.file_uploader(
+                "📤 Lub wgraj własny szablon HTML",
+                type=['html'],
+                help="Szablon musi zawierać placeholdery: {{imie}}, {{nazwisko}}, {{warsztat}}, {{data}}, {{organizacja}}"
+            )
+
+            if custom_template:
+                # Zapisz custom template
+                custom_path = os.path.join('templates', 'custom_template.html')
+                os.makedirs('templates', exist_ok=True)
+
+                with open(custom_path, 'wb') as f:
+                    f.write(custom_template.getbuffer())
+
+                selected_template = 'custom_template.html'
+                st.success("✅ Własny szablon wczytany!")
+
+        # Podgląd szablonu (miniaturka)
+        if selected_template:
+            with st.expander("👁️ Podgląd szablonu", expanded=False):
+                metadata = template_manager.get_template_metadata(selected_template)
+
+                col_a, col_b = st.columns([1, 2])
+
+                with col_a:
+                    # Badge ze stylem
+                    style_colors = {
+                        'elegant': '#2c3e50',
+                        'playful': '#e74c3c',
+                        'formal': '#34495e',
+                        'classic': '#3498db',
+                        'custom': '#95a5a6'
+                    }
+
+                    color = style_colors.get(metadata['style'], '#95a5a6')
+
+                    st.markdown(f"""
+                    <div style="padding: 20px; background: {color}; color: white; border-radius: 10px; text-align: center;">
+                        <h3 style="margin:0; color: white;">{metadata['display_name']}</h3>
+                        <p style="margin:5px 0; font-size: 14px;">{metadata['description']}</p>
+                        <p style="margin:5px 0; font-size: 12px; opacity: 0.8;">Styl: {metadata['style']}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                with col_b:
+                    # Przykładowy render (z placeholder danymi)
+                    example_data = {
+                        'imie': 'Jan',
+                        'nazwisko': 'Kowalski',
+                        'warsztat': 'Python dla początkujących',
+                        'data': '2024-01-15',
+                        'organizacja': 'Twoja Organizacja'
+                    }
+
+                    preview_html = template_manager.apply_template(selected_template, example_data)
+                    if preview_html:
+                        # Renderuj HTML w mini podglądzie (CSS scale down)
+                        scaled_html = f"""
+                        <div style="transform: scale(0.25); transform-origin: top left; width: 400%; height: 300px; overflow: hidden; border: 2px solid #ddd; border-radius: 5px;">
+                            {preview_html}
+                        </div>
+                        """
+                        st.markdown(scaled_html, unsafe_allow_html=True)
+                    else:
+                        st.error("Nie można wczytać podglądu szablonu")
+
+        # Zapisz wybrany szablon w session state
+        st.session_state.selected_template = selected_template
+
+        # Sekcja 4: Konfiguracja certyfikatu
+        st.markdown("---")
+        st.subheader("5️⃣ Konfiguracja certyfikatu")
 
         col1, col2 = st.columns(2)
 
@@ -266,9 +371,9 @@ def tab_generate_certificates():
         elif os.path.exists('assets/logo.png'):
             logo_path = 'assets/logo.png'
 
-        # Sekcja 4: Podgląd
+        # Sekcja 5: Podgląd
         st.markdown("---")
-        st.subheader("5️⃣ Podgląd certyfikatu")
+        st.subheader("6️⃣ Podgląd certyfikatu")
 
         col1, col2 = st.columns([2, 1])
 
@@ -296,11 +401,19 @@ def tab_generate_certificates():
                             'imie': row['Imię'],
                             'nazwisko': row['Nazwisko'],
                             'warsztat': row['Warsztat'],
-                            'data': str(row['Data'])
+                            'data': str(row['Data']),
+                            'organizacja': org_name
                         }
 
-                        # Generuj certyfikat
-                        generator = CertificateGenerator(logo_path=logo_path)
+                        # Generuj certyfikat z wybranym szablonem
+                        if selected_template:
+                            # Użyj PDFGenerator z szablonem HTML (WeasyPrint)
+                            from modules.pdf_generator import PDFGenerator
+                            generator = PDFGenerator(template_name=selected_template, templates_dir='templates')
+                        else:
+                            # Fallback - użyj CertificateGenerator (ReportLab)
+                            generator = CertificateGenerator(logo_path=logo_path)
+
                         preview_path = 'output/preview.pdf'
                         os.makedirs('output', exist_ok=True)
 
@@ -319,12 +432,14 @@ def tab_generate_certificates():
 
                     except Exception as e:
                         st.error(f"❌ Błąd: {e}")
+                        import traceback
+                        st.code(traceback.format_exc())
 
-        # Sekcja 5: Generowanie masowe
+        # Sekcja 6: Generowanie masowe
         st.markdown("---")
-        st.subheader("6️⃣ Generowanie masowe")
+        st.subheader("7️⃣ Generowanie masowe")
 
-        st.info(f"📊 Zostanie wygenerowanych **{len(edited_df)}** certyfikatów")
+        st.info(f"📊 Zostanie wygenerowanych **{len(edited_df)}** certyfikatów z szablonem **{template_manager.get_template_metadata(selected_template)['display_name']}**")
 
         col1, col2, col3 = st.columns([2, 1, 1])
 
@@ -338,8 +453,18 @@ def tab_generate_certificates():
                     # Przygotuj dane
                     participants = handler.get_participants_list(edited_df)
 
-                    # Generuj certyfikaty
-                    generator = CertificateGenerator(logo_path=logo_path)
+                    # Dodaj organizację do wszystkich uczestników
+                    for p in participants:
+                        p['organizacja'] = org_name
+
+                    # Generuj certyfikaty z wybranym szablonem
+                    if selected_template:
+                        from modules.pdf_generator import PDFGenerator
+                        generator = PDFGenerator(template_name=selected_template, templates_dir='templates')
+                    else:
+                        # Fallback do ReportLab
+                        generator = CertificateGenerator(logo_path=logo_path)
+
                     os.makedirs('output', exist_ok=True)
 
                     generated_files = []
@@ -368,10 +493,16 @@ def tab_generate_certificates():
 
                     # Utwórz archiwum ZIP
                     status_text.text("Tworzenie archiwum ZIP...")
-                    zip_path = generator.create_zip_archive(
-                        generated_files,
-                        'output/certyfikaty.zip'
-                    )
+
+                    # Użyj CertificateGenerator.create_zip_archive() lub stwórz ZIP ręcznie
+                    import zipfile
+                    zip_path = os.path.join('output', 'certyfikaty.zip')
+
+                    with zipfile.ZipFile(zip_path, 'w') as zipf:
+                        for file in generated_files:
+                            zipf.write(file, os.path.basename(file))
+
+                    status_text.text("✅ Gotowe!")
 
                     progress_bar.empty()
                     status_text.empty()

@@ -3,7 +3,9 @@ Moduł do zarządzania szablonami certyfikatów
 """
 
 import os
+import re
 from pathlib import Path
+from typing import Dict, List, Optional
 
 
 class TemplateManager:
@@ -17,6 +19,7 @@ class TemplateManager:
             templates_dir (str): Katalog z szablonami
         """
         self.templates_dir = templates_dir
+        self.templates_cache = {}  # Cache dla wczytanych szablonów
 
     def get_available_templates(self):
         """
@@ -198,9 +201,147 @@ class TemplateManager:
         try:
             if os.path.exists(template_path):
                 os.remove(template_path)
+                # Usuń z cache
+                if template_name in self.templates_cache:
+                    del self.templates_cache[template_name]
                 return True
             return False
 
         except Exception as e:
             print(f"Błąd podczas usuwania szablonu: {e}")
             return False
+
+    def load_templates(self) -> Dict[str, str]:
+        """
+        Skanuje folder templates/ i wczytuje wszystkie szablony
+
+        Returns:
+            Dict[str, str]: Słownik {nazwa_szablonu: zawartość_html}
+        """
+        templates = {}
+        available = self.get_available_templates()
+
+        for template_name in available:
+            content = self.load_template(template_name)
+            if content:
+                templates[template_name] = content
+                self.templates_cache[template_name] = content
+
+        return templates
+
+    def apply_template(self, template_name: str, data: Dict[str, str]) -> Optional[str]:
+        """
+        Renderuje szablon z danymi (zastępuje placeholdery)
+
+        Args:
+            template_name (str): Nazwa szablonu
+            data (Dict[str, str]): Dane do wstawienia, np.:
+                {
+                    'imie': 'Jan',
+                    'nazwisko': 'Kowalski',
+                    'warsztat': 'Python dla początkujących',
+                    'data': '2024-01-15',
+                    'organizacja': 'NGO XYZ',
+                    'logo_path': 'path/to/logo.png'
+                }
+
+        Returns:
+            str: Wyrenderowany HTML lub None w przypadku błędu
+
+        Example:
+            >>> manager = TemplateManager()
+            >>> data = {
+            ...     'imie': 'Jan',
+            ...     'nazwisko': 'Kowalski',
+            ...     'warsztat': 'Python',
+            ...     'data': '2024-01-15',
+            ...     'organizacja': 'Moja Organizacja'
+            ... }
+            >>> html = manager.apply_template('szablon_podstawowy.html', data)
+            >>> print(html[:100])
+        """
+        # Wczytaj szablon (z cache lub z pliku)
+        if template_name in self.templates_cache:
+            template_content = self.templates_cache[template_name]
+        else:
+            template_content = self.load_template(template_name)
+            if not template_content:
+                return None
+            self.templates_cache[template_name] = template_content
+
+        # Zastąp placeholdery
+        rendered = template_content
+
+        # Podstawowe placeholdery
+        placeholders = {
+            '{{imie}}': data.get('imie', data.get('Imię', '')),
+            '{{nazwisko}}': data.get('nazwisko', data.get('Nazwisko', '')),
+            '{{warsztat}}': data.get('warsztat', data.get('Warsztat', '')),
+            '{{data}}': data.get('data', data.get('Data', '')),
+            '{{organizacja}}': data.get('organizacja', 'Organizacja'),
+            '{{logo_path}}': data.get('logo_path', ''),
+        }
+
+        # Zastąp wszystkie placeholdery
+        for placeholder, value in placeholders.items():
+            rendered = rendered.replace(placeholder, str(value))
+
+        # Obsługa logo - jeśli brak logo_path, usuń tag <img>
+        if not data.get('logo_path'):
+            # Usuń cały tag <img> z logo
+            rendered = re.sub(
+                r'<img[^>]*class="logo"[^>]*>',
+                '',
+                rendered,
+                flags=re.IGNORECASE
+            )
+
+        return rendered
+
+    def get_template_metadata(self, template_name: str) -> Dict[str, str]:
+        """
+        Wyciąga metadane szablonu (nazwa, opis, styl)
+
+        Args:
+            template_name (str): Nazwa szablonu
+
+        Returns:
+            Dict[str, str]: Metadane szablonu
+        """
+        # Mapowanie nazw szablonów na metadane
+        templates_info = {
+            'szablon_podstawowy.html': {
+                'display_name': 'Podstawowy',
+                'description': 'Minimalistyczny, elegancki szablon',
+                'style': 'elegant',
+                'color': '#2c3e50'
+            },
+            'szablon_kolorowy.html': {
+                'display_name': 'Kolorowy',
+                'description': 'Żywy szablon z kolorową ramką',
+                'style': 'playful',
+                'color': '#e74c3c'
+            },
+            'szablon_formalny.html': {
+                'display_name': 'Formalny',
+                'description': 'Bardzo oficjalny, klasyczny styl',
+                'style': 'formal',
+                'color': '#34495e'
+            },
+            'certificate_template.html': {
+                'display_name': 'Klasyczny',
+                'description': 'Domyślny szablon certyfikatu',
+                'style': 'classic',
+                'color': '#3498db'
+            }
+        }
+
+        return templates_info.get(
+            template_name,
+            {
+                'display_name': template_name.replace('.html', '').replace('_', ' ').title(),
+                'description': 'Niestandardowy szablon',
+                'style': 'custom',
+                'color': '#95a5a6'
+            }
+        )

@@ -35,54 +35,86 @@ except ImportError:
 
 
 class PDFGenerator:
-    """Klasa do generowania certyfikatów PDF z szablonów HTML"""
+    """
+    Klasa do generowania certyfikatów PDF z szablonów HTML za pomocą WeasyPrint
 
-    def __init__(self, template_path):
+    Obsługuje różne szablony HTML z placeholderami {{imie}}, {{nazwisko}}, etc.
+    """
+
+    def __init__(self, template_path=None, template_name=None, templates_dir='templates'):
         """
         Inicjalizacja generatora PDF
 
         Args:
-            template_path (str): Ścieżka do szablonu HTML
+            template_path (str, optional): Bezpośrednia ścieżka do szablonu HTML
+            template_name (str, optional): Nazwa szablonu z katalogu templates/
+            templates_dir (str): Katalog z szablonami (domyślnie 'templates')
         """
+        from .template_manager import TemplateManager
+
+        self.template_manager = TemplateManager(templates_dir)
         self.template_path = template_path
+        self.template_name = template_name
+
+        # Jeśli podano template_name, ustaw odpowiednią ścieżkę
+        if template_name and not template_path:
+            self.template_path = self.template_manager.get_template_path(template_name)
 
     def generate_certificate(self, participant_data, output_path):
         """
         Generuje certyfikat PDF dla uczestnika
 
         Args:
-            participant_data (dict): Słownik z danymi uczestnika
-                - imie: Imię uczestnika
-                - nazwisko: Nazwisko uczestnika
-                - warsztat: Nazwa warsztatu
-                - data: Data warsztatu
-                - email: Email uczestnika
+            participant_data (dict): Słownik z danymi uczestnika:
+                - imie/Imię: Imię uczestnika
+                - nazwisko/Nazwisko: Nazwisko uczestnika
+                - warsztat/Warsztat: Nazwa warsztatu
+                - data/Data: Data warsztatu
+                - email/Email: Email uczestnika (opcjonalnie)
+                - organizacja: Nazwa organizacji (opcjonalnie)
             output_path (str): Ścieżka do zapisu pliku PDF
 
         Returns:
             bool: True jeśli sukces, False w przypadku błędu
         """
         try:
-            # Wczytaj szablon HTML
-            with open(self.template_path, 'r', encoding='utf-8') as f:
-                template_html = f.read()
+            # Jeśli podano template_name, użyj TemplateManager
+            if self.template_name:
+                html_content = self.template_manager.apply_template(
+                    self.template_name,
+                    participant_data
+                )
+                if not html_content:
+                    print(f"Błąd: nie można załadować szablonu {self.template_name}")
+                    return False
+            else:
+                # Wczytaj szablon bezpośrednio z pliku
+                with open(self.template_path, 'r', encoding='utf-8') as f:
+                    template_html = f.read()
 
-            # Zastąp placeholdery danymi uczestnika
-            html_content = template_html.format(
-                imie=participant_data.get('imie', ''),
-                nazwisko=participant_data.get('nazwisko', ''),
-                warsztat=participant_data.get('warsztat', ''),
-                data=participant_data.get('data', ''),
-                email=participant_data.get('email', '')
-            )
+                # Zastąp placeholdery {{}} danymi uczestnika
+                html_content = template_html
+                placeholders = {
+                    '{{imie}}': participant_data.get('imie', participant_data.get('Imię', '')),
+                    '{{nazwisko}}': participant_data.get('nazwisko', participant_data.get('Nazwisko', '')),
+                    '{{warsztat}}': participant_data.get('warsztat', participant_data.get('Warsztat', '')),
+                    '{{data}}': participant_data.get('data', participant_data.get('Data', '')),
+                    '{{email}}': participant_data.get('email', participant_data.get('Email', '')),
+                    '{{organizacja}}': participant_data.get('organizacja', 'Organizacja'),
+                }
 
-            # Generuj PDF
+                for placeholder, value in placeholders.items():
+                    html_content = html_content.replace(placeholder, str(value))
+
+            # Generuj PDF używając WeasyPrint
             HTML(string=html_content).write_pdf(output_path)
 
             return True
 
         except Exception as e:
             print(f"Błąd podczas generowania certyfikatu: {e}")
+            import traceback
+            traceback.print_exc()
             return False
 
     def generate_batch(self, participants_list, output_dir):

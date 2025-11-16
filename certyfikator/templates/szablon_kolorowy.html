@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certyfikat - Szablon Kolorowy</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
+        }
+
+        .certificate-container {
+            width: 297mm;
+            height: 210mm;
+            padding: 0;
+            margin: 0;
+            position: relative;
+            background: linear-gradient(135deg,
+                #667eea 0%,
+                #764ba2 25%,
+                #f093fb 50%,
+                #4facfe 75%,
+                #00f2fe 100%);
+        }
+
+        .certificate {
+            position: absolute;
+            top: 12mm;
+            left: 12mm;
+            right: 12mm;
+            bottom: 12mm;
+            background: white;
+            border-radius: 20px;
+            padding: 25mm 35mm;
+            box-shadow:
+                0 0 0 5px #ff6b6b,
+                0 0 0 10px #4ecdc4,
+                0 0 0 15px #ffe66d,
+                0 0 0 20px #a8dadc,
+                0 10px 50px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Kolorowe ozdobniki */
+        .color-dot {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.6;
+        }
+
+        .dot1 {
+            width: 60px;
+            height: 60px;
+            background: #ff6b6b;
+            top: 20px;
+            left: 20px;
+        }
+
+        .dot2 {
+            width: 80px;
+            height: 80px;
+            background: #4ecdc4;
+            top: 10px;
+            right: 30px;
+        }
+
+        .dot3 {
+            width: 50px;
+            height: 50px;
+            background: #ffe66d;
+            bottom: 30px;
+            left: 40px;
+        }
+
+        .dot4 {
+            width: 70px;
+            height: 70px;
+            background: #a8dadc;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        .dot5 {
+            width: 40px;
+            height: 40px;
+            background: #f093fb;
+            top: 50%;
+            left: 10px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border: 5px solid white;
+        }
+
+        .title {
+            font-size: 56px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+        }
+
+        .subtitle {
+            font-size: 22px;
+            color: #f093fb;
+            font-weight: bold;
+            letter-spacing: 3px;
+        }
+
+        .content {
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            padding: 30px 0;
+        }
+
+        .intro-text {
+            font-size: 24px;
+            color: #666;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .participant-name {
+            font-size: 48px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 25px 0;
+            padding: 20px;
+            position: relative;
+        }
+
+        .participant-name::before,
+        .participant-name::after {
+            content: '★';
+            position: absolute;
+            font-size: 36px;
+            color: #ffe66d;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .participant-name::before {
+            left: -20px;
+        }
+
+        .participant-name::after {
+            right: -20px;
+        }
+
+        .completion-text {
+            font-size: 22px;
+            color: #666;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+
+        .workshop-name {
+            font-size: 36px;
+            font-weight: bold;
+            color: #764ba2;
+            margin: 25px 0;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #ffe66d 0%, #ffafbd 100%);
+            border-radius: 50px;
+            display: inline-block;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .workshop-date {
+            font-size: 20px;
+            color: #4ecdc4;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 3px dashed #a8dadc;
+            position: relative;
+            z-index: 10;
+        }
+
+        .signature {
+            text-align: center;
+        }
+
+        .signature-line {
+            width: 200px;
+            height: 3px;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            margin: 0 auto 15px;
+            border-radius: 3px;
+        }
+
+        .signature-title {
+            font-size: 16px;
+            color: #764ba2;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .congrats {
+            text-align: center;
+            font-size: 20px;
+            color: #ff6b6b;
+            font-weight: bold;
+            margin-top: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .congrats::before,
+        .congrats::after {
+            content: '🎉';
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="certificate-container">
+        <div class="certificate">
+            <!-- Kolorowe ozdobniki -->
+            <div class="color-dot dot1"></div>
+            <div class="color-dot dot2"></div>
+            <div class="color-dot dot3"></div>
+            <div class="color-dot dot4"></div>
+            <div class="color-dot dot5"></div>
+
+            <div class="header">
+                <div class="logo">🏆</div>
+                <h1 class="title">Certyfikat</h1>
+                <p class="subtitle">Wspaniałego Osiągnięcia!</p>
+            </div>
+
+            <div class="content">
+                <p class="intro-text">Ten certyfikat potwierdza, że</p>
+
+                <div class="participant-name">{{imie}} {{nazwisko}}</div>
+
+                <p class="completion-text">z wielkim zaangażowaniem ukończył/a warsztat</p>
+
+                <div class="workshop-name">{{warsztat}}</div>
+
+                <p class="workshop-date">📅 {{data}}</p>
+
+                <p class="congrats">Gratulacje!</p>
+            </div>
+
+            <div class="footer">
+                <div class="signature">
+                    <div class="signature-line"></div>
+                    <p class="signature-title">Organizator</p>
+                </div>
+
+                <div class="signature">
+                    <div class="signature-line"></div>
+                    <p class="signature-title">Prowadzący</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

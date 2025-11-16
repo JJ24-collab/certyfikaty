@@ -48,3 +48,4 @@ data/attendance/*.jpg
 
 # Streamlit
 .streamlit/secrets.toml
+output/test/

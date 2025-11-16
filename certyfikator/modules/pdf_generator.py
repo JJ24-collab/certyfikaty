@@ -5,7 +5,7 @@ Moduł do generowania certyfikatów PDF
 import os
 import zipfile
 from datetime import datetime
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, TYPE_CHECKING
 from pathlib import Path
 
 # WeasyPrint (dla PDFGenerator)
@@ -29,6 +29,9 @@ try:
     REPORTLAB_AVAILABLE = True
 except ImportError:
     REPORTLAB_AVAILABLE = False
+    # Dla type checking bez instalacji ReportLab
+    if TYPE_CHECKING:
+        from reportlab.pdfgen import canvas
 
 
 class PDFGenerator:
@@ -164,7 +167,7 @@ class CertificateGenerator:
         # Marginesy
         self.margin = 20 * mm
 
-    def _setup_fonts(self, c: canvas.Canvas) -> None:
+    def _setup_fonts(self, c: "canvas.Canvas") -> None:
         """
         Konfiguruje czcionki dla certyfikatu
 
@@ -175,7 +178,7 @@ class CertificateGenerator:
         # ReportLab automatycznie obsługuje polskie znaki w Helvetica
         pass
 
-    def _draw_decorative_border(self, c: canvas.Canvas) -> None:
+    def _draw_decorative_border(self, c: "canvas.Canvas") -> None:
         """
         Rysuje ozdobną ramkę wokół certyfikatu
 
@@ -233,7 +236,7 @@ class CertificateGenerator:
         c.line(self.page_width - corner_offset, corner_offset,
                self.page_width - corner_offset - corner_size, corner_offset)
 
-    def _draw_logo(self, c: canvas.Canvas) -> float:
+    def _draw_logo(self, c: "canvas.Canvas") -> float:
         """
         Rysuje logo organizacji na górze certyfikatu
 
@@ -268,7 +271,7 @@ class CertificateGenerator:
             print(f"Nie można wczytać logo: {e}")
             return 0
 
-    def _draw_title(self, c: canvas.Canvas, y_position: float) -> float:
+    def _draw_title(self, c: "canvas.Canvas", y_position: float) -> float:
         """
         Rysuje tytuł "CERTYFIKAT"
 
@@ -299,7 +302,7 @@ class CertificateGenerator:
 
     def _draw_participant_info(
         self,
-        c: canvas.Canvas,
+        c: "canvas.Canvas",
         participant_data: Dict[str, str],
         y_position: float
     ) -> float:
@@ -380,7 +383,7 @@ class CertificateGenerator:
 
         return y_position - 20 * mm
 
-    def _draw_signature_area(self, c: canvas.Canvas) -> None:
+    def _draw_signature_area(self, c: "canvas.Canvas") -> None:
         """
         Rysuje miejsce na podpisy
 

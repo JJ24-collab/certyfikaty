@@ -2,9 +2,15 @@
 Moduł do przetwarzania OCR list obecności
 """
 
-import pytesseract
-from PIL import Image
 import os
+
+# Opcjonalny import pytesseract
+try:
+    import pytesseract
+    from PIL import Image
+    TESSERACT_AVAILABLE = True
+except ImportError:
+    TESSERACT_AVAILABLE = False
 
 
 class OCRProcessor:
@@ -16,7 +22,16 @@ class OCRProcessor:
 
         Args:
             tesseract_path (str, optional): Ścieżka do Tesseract OCR
+
+        Raises:
+            ImportError: Jeśli pytesseract nie jest zainstalowany
         """
+        if not TESSERACT_AVAILABLE:
+            raise ImportError(
+                "Pytesseract nie jest zainstalowany. "
+                "Zainstaluj: pip install pytesseract"
+            )
+
         if tesseract_path:
             pytesseract.pytesseract.tesseract_cmd = tesseract_path
 

@@ -6,3 +6,6 @@ pytesseract
 openpyxl
 python-docx
 weasyprint
+opencv-python
+numpy
+pdf2image
